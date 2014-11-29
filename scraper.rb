@@ -1,6 +1,7 @@
 require 'capybara'
 require 'capybara/poltergeist'
 require 'csv'
+require 'gdbm'
 
 include Capybara::DSL
 Capybara.default_driver = :poltergeist
