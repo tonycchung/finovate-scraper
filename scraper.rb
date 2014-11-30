@@ -2,77 +2,72 @@ require 'capybara'
 require 'capybara/poltergeist'
 require 'csv'
 require 'gdbm'
+require 'launchy'
 
 include Capybara::DSL
-Capybara.default_driver = :poltergeist
+Capybara.register_driver :poltergeist do |app|
+  Capybara::Poltergeist::Driver.new(app, {:timeout => 5})
+end
+# Capybara.default_driver = :poltergeist
+Capybara.default_driver = :selenium
 
 # Europe 2014
 visit "http://www.finovate.com/europe14vid/"
-shows = []
+shows = GDBM.new("shows.db")
 
 all(:css, "#contentwrapper table tbody tr td table:nth-child(3) tbody tr td div table tbody tr td").each do |td|
-  video_show = td.first(:css, "a", {:visible => true}).text
-  show_year = "2014"
-  location = "Europe"
-  url = title = td.first(:css, "a", {:visible => true})["href"]
+  if td.first(:css, "a", {visible: true})
+    video_show = td.first(:css, "a").text
+    show_year = "2014"
+    location = "Europe"
+    url = td.first(:css, "a", {:visible => true})["href"]
 
-  shows << {
-    video_show: video_show,
-    show_year: show_year,
-    location: location,
-    url: url
-  }
-end
+    next if shows[url]
 
-shows.each do |show|
-  visit "http://www.finovate.com/europe14vid/#{show[:url]}"
-  all(:css, "#contentwrapper table tbody tr td table:nth-child(3) tbody tr td div table tbody tr td.cellpadding-left").each do |p|
-    key_stats = ""
-    company_details = ""
-    company_details << p if p.has_text?("describe")
-    key_stats << p if p.has_text?("key")
+    shows[url] = JSON.dump(
+      video_show: video_show,
+      show_year: show_year,
+      location: location,
+      url: url
+    )
   end
-  show[:key_stats] = key_stats
 end
 
-CSV do |csv|
-  csv << ["Video Show", "Show year", "Location", "Company details", "Key stats"]
-  shows.each do |show|
+shows.each do |url, json|
+  show = JSON.load(json)
+
+  next if show["key_stats"].size > 0
+  key_stats = ""
+  company_details = ""
+
+  if url.match(/finovate/)
+    site = "#{url}"
+  else
+    site = "http://www.finovate.com/europe14vid/#{url}"
+  end
+
+  visit site
+  has_content?(show["video_show"]) or raise "couldn't load #{url}"
+  all(:css, "#contentwrapper table tbody tr td table:nth-child(3) tbody tr td div table tbody tr td.cellpadding-left p").each do |p|
+    company_details << p.text if p.has_text?("describe")
+    key_stats << p.text if p.has_text?("Key") || p.has_text?("Contacts")
+  end
+  show["key_stats"] = key_stats
+  show["company_details"] = company_details
+  shows[url] = JSON.dump(show)
+end
+
+CSV.open('euro2k14.csv', 'w') do |csv|
+  csv << ["Video Show", "Show year", "Location", "Company details", "Key stats", "Url"]
+  shows.each do |url, json|
+    show = JSON.load(json)
     csv << [
-      show[:video_show],
-      show[:show_year],
-      show[:location],
-      show[:company_details],
-      show[:key_stats]
+      show["video_show"],
+      show["show_year"],
+      show["location"],
+      show["company_details"],
+      show["key_stats"],
+      show["url"]
     ]
   end
 end
-
-#contentwrapper > table > tbody > tr > td > table:nth-child(3) > tbody > tr > td > div > table > tbody > tr > td.cellpadding-left > p:nth-child(1)
-#contentwrapper > table > tbody > tr > td > table:nth-child(3) > tbody > tr > td > div > table > tbody > tr > td.cellpadding-left > p:nth-child(2)
-#contentwrapper > table > tbody > tr > td > table:nth-child(3) > tbody > tr > td > div > table > tbody > tr > td.cellpadding-left > p:nth-child(3)
-# visit "http://finovate.com/findevrsf14vid/"
-
-# Spring SF 2014
-# all(:css, "#contentwrapper table tbody tr td table:nth-child(3) tbody tr td div table tbody tr td").each do |td|
-#   if td.has_css?("a")
-#     hsh = {}
-#     link = td.first(:css, "a", {:visible  true})
-#     hsh[:show] = link
-#     link.click
-
-
-#   end
-# end
-
-#contentwrapper table tbody tr td table:nth-child(3) tbody tr td div table tbody tr:nth-child(1)
-=begin
-Company Details
-#contentwrapper table tbody tr td table:nth-child(3) tbody tr td table tbody tr td:nth-child(2) p
-#contentwrapper table tbody tr td table:nth-child(3) tbody tr td table tbody tr td:nth-child(2) p
-
-//*[@id="contentwrapper"]/table/tbody/tr/td/table[2]/tbody/tr/td/div/table/tbody/tr/td[1]/text()
-//*[@id="contentwrapper"]/table/tbody/tr/td/table[2]/tbody/tr/td/div/table/tbody/tr/td[1]/text()[1]
-
-
-=end
