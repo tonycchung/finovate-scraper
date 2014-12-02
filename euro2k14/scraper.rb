@@ -33,6 +33,18 @@ all(:css, "#contentwrapper table tbody tr td table:nth-child(3) tbody tr td div 
   end
 end
 
+def sanitize_key(string)
+  arry = string.split(',')
+  arry.first.each_char do |char|
+    arry.first.slice!(0,1)
+    if char == ':'
+      arry.first.slice!(0,1)
+      break
+    end
+  end
+  arry.join(', ')
+end
+
 # Click through each show's link and save company details and key stats. Also save in gdbm so on restart don't overwrite ones already completed.
 shows.each do |url, json|
   show = JSON.load(json)
@@ -72,12 +84,12 @@ shows.each do |url, json|
     all(:xpath, './/p').each do |p|
       p = p.text
 
-      key_execs                  = p.match(/[^Key\s+Executives: ].*/).to_s if p.match(/Key\s+Executives/i)
-      key_board_members          = p.match(/[^Key\s+Board\s+Members: ].*/).to_s if p.match(/Key\s+Board\s+Members/i)
-      key_advisory_board_members = p.match(/[^Key\s+Advisory\s+Board\s+Members: ].*/).to_s if p.match(/Key\s+Advisory\s+Board\s+Members/i)
-      key_investors              = p.match(/[^Key\s+Investors: ]).*/).to_s if p.match(/Key\s+Investors/i)
-      key_partnerships           = p.match(/[^Key\s+Partnerships: ]).*/).to_s if p.match(/Key\s+Partnerships/i)
-      key_customers              = p.match(/[^Key\s+Customers: ]).*/).to_s if p.match(/Key\s+Customers/i)
+      key_execs                  = sanitize_key(p) if p.match(/Key\s+Executives/i)
+      key_board_members          = sanitize_key(p) if p.match(/Key\s+Board\s+Members/i)
+      key_advisory_board_members = sanitize_key(p) if p.match(/Key\s+Advisory\s+Board\s+Members/i)
+      key_investors              = sanitize_key(p) if p.match(/Key\s+Investors/i)
+      key_partnerships           = sanitize_key(p) if p.match(/Key\s+Partnerships/i)
+      key_customers              = sanitize_key(p) if p.match(/Key\s+Customers/i)
     end
   end
 
