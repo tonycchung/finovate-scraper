@@ -47,7 +47,7 @@ shows.each do |url, json|
   profile = doc.css('#contentwrapper > table > tr > td > table:nth-child(3) > tr > td > div > table > tr > td.cellpadding-left').inner_html
   company_profile = []
   profile.split("\n").each do |line|
-    if line.include?("Product distribution strategy")
+    if line.match(/(product\s+distribution\s+strategy)/i) || line.match(/key/i)
       company_profile.pop
       company_profile.shift
       company_profile.join
@@ -57,12 +57,12 @@ shows.each do |url, json|
   end
 
   # Use capybara for rest of data
-  key_execs = ""
-  key_board_members = ""
-  key_advisory_board_members = ""
-  key_investors = ""
-  key_partnerships = ""
-  key_customers = ""
+  key_execs = nil
+  key_board_members = nil
+  key_advisory_board_members = nil
+  key_investors = nil
+  key_partnerships = nil
+  key_customers = nil
 
   visit "#{url}"
   has_content?(show["video_show"]) or raise "couldn't load #{url}"
@@ -72,12 +72,12 @@ shows.each do |url, json|
     all(:xpath, './/p').each do |p|
       p = p.text
 
-      key_execs                  = p.match(/([^Key\s+Executives: ]).*/).to_s if p.include?("Key Executives")
-      key_board_members          = p.match(/([^Key\s+Board\s+Members: ]).*/).to_s if p.include?("Key Board Members")
-      key_advisory_board_members = p.match(/([^Key\s+Advisory\s+Board\s+Members: ]).*/).to_s if p.include?("Key Advisory Board Members")
-      key_investors              = p.match(/([^Key\s+Investors: ]).*/).to_s if p.include?("Key Investors")
-      key_partnerships           = p.match(/([^Key\s+Partnerships: ]).*/).to_s if p.include?("Key Partnerships")
-      key_customers              = p.match(/([^Key\s+Customers: ]).*/).to_s if p.include?("Key Customers")
+      key_execs                  = p.match(/([^key\s+executives: ]).*/i).to_s if p.match(/key\s+executives/i)
+      key_board_members          = p.match(/([^key\s+board\s+members: ]).*/i).to_s if p.match(/key\s+board\s+members/i)
+      key_advisory_board_members = p.match(/([^key\s+advisory\s+board\s+members: ]).*/i).to_s if p.match(/key\s+advisory\s+board\s+members/i)
+      key_investors              = p.match(/([^key\s+investors: ]).*/i).to_s if p.match(/key\s+investors/i)
+      key_partnerships           = p.match(/([^key\s+partnerships: ]).*/i).to_s if p.match(/key\s+partnerships/i)
+      key_customers              = p.match(/([^key\s+customers: ]).*/i).to_s if p.match(/key\s+customers/i)
     end
   end
 

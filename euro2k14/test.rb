@@ -50,7 +50,7 @@ Capybara.default_driver = :poltergeist
 #   puts first(:css, "#contentwrapper table tbody tr td table:nth-child(3) tbody tr td div table tbody tr td.cellpadding-left p").has_text?("describe")
 # end
 
-url = "http://www.finovate.com/europe14vid/avoka.html"
+url = "http://www.finovate.com/europe14vid/meniga.html"
 nokogiri_page = Nokogiri::HTML(open("#{url}"))
 company_description = nokogiri_page.css('#contentwrapper > table > tr > td > table:nth-child(3) > tr > td > table > tr > td:nth-child(2) > p').inner_html
 company_profile = nokogiri_page.css('#contentwrapper > table > tr > td > table:nth-child(3) > tr > td > div > table > tr > td.cellpadding-left').inner_html
@@ -67,30 +67,33 @@ end
 
 key_execs = ""
 key_board_members = ""
+key_advisory_board_members = ""
 key_investors = ""
 key_partnerships = ""
 key_customers = ""
+
 visit "#{url}"
+has_content?(show["video_show"]) or raise "couldn't load #{url}"
 
-within(:css, '#contentwrapper > table > tbody > tr > td > table:nth-child(3) > tbody > tr > td > div > table > tbody > tr > td.cellpadding-left') do
+# Go through every p tag in each td and save whichever key data it contains
+within(:xpath, '//table/tbody/tr/td/table[2]/tbody/tr/td/div/table/tbody/tr/td[1]') do
   all(:xpath, './/p').each do |p|
-    p = p.text
+    all(:xpath, './/strong').each do |strong|
 
-    # describe_selves << "\n" + p.text unless p.find(:xpath, './/strong')
-    # describe_product = p.find(:xpath, ".//text()") if p.include?("how they describe their product")
+    strong = strong.text
 
-    key_execs = p.match(/([^Key Executives: ]).*/).to_s if p.include?("Key Executives")
-    key_board_members = p.match(/([^Key Board Members: ]).*/).to_s if p.include?("Key Board Members")
-    key_investors = p.match(/([^Key Investors: ]).*/).to_s if p.include?("Key Investors")
-    key_customers = p.match(/([^Key Customers: ]).*/).to_s if p.include?("Key Customers")
-    key_partnerships = p.match(/([^Key Partnerships: ]).*/).to_s if p.include?("Key Partnerships")
+    key_execs                  = strong.match(/([^Key\s+Executives: ]).*/).to_s if strong.include?("Key Executives")
+    key_board_members          = strong.match(/([^Key\s+Board\s+Members: ]).*/).to_s if strong.include?("Key Board Members")
+    key_advisory_board_members = strong.match(/([^Key\s+Advisory\s+Board\s+Members: ]).*/).to_s if strong.include?("Key Advisory Board Members")
+    key_investors              = strong.match(/([^Key\s+Investors: ]).*/).to_s if strong.include?("Key Investors")
+    key_partnerships           = strong.match(/([^Key\s+Partnerships: ]).*/).to_s if strong.include?("Key Partnerships")
+    key_customers              = strong.match(/([^Key\s+Customers: ]).*/).to_s if strong.include?("Key Customers")
   end
 end
 
 puts key_execs
 puts key_board_members
+puts key_advisory_board_members
 puts key_investors
 puts key_partnerships
 puts key_customers
-puts company_description
-puts new_profile
