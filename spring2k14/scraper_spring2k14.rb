@@ -1,40 +1,16 @@
-require 'capybara'
-require 'capybara/poltergeist'
-require 'csv'
+require 'oo_scraper'
 
-include Capybara::DSL
-Capybara.default_driver = :poltergeist
-# Capybara.default_driver = :selenium
+show_name = 'spring2k14'
+year = 2014
+location = 'spring'
+url = 'http://www.finovate.com/spring14vid/'
+shows_td =
+css_details =
+css_profile =
+css_key_stats =
 
-# Spring 2014
-visit "http://www.finovate.com/spring14vid/"
-shows = []
-
-# Save each show, year, location and url in 'shows' gdbm
-all(:css, "#contentwrapper > table > tbody > tr > td > table:nth-child(3) > tbody > tr > td > div > table > tbody > tr > td").each do |td|
-  if td.first(:css, "a", {visible: true})
-    video_show = td.first(:css, "a").text
-    show_year = "2014"
-    location = "Spring"
-    url = td.first(:css, "a", {:visible => true})["href"]
-
-    shows << {
-      video_show: video_show,
-      show_year: show_year,
-      location: location,
-      url: url
-    }
-  end
-end
-
-CSV.open('spring2k14.csv', 'w') do |csv|
-  csv << ["Video Show", "Show year", "Location", "url"]
-  shows.each do |show|
-    csv << [
-        show[:video_show],
-        show[:show_year],
-        show[:location],
-        show[:url]
-      ]
-  end
-end
+scraper = Scraper.new(show_name, year, location, url)
+scraper.get_shows(shows_td)
+scraper.get_company_profile(css_details, css_profile)
+scraper.get_key_stats(css_key_stats)
+scraper.output_csv
