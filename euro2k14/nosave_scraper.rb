@@ -11,7 +11,7 @@ Capybara.default_driver = :selenium
 
 # Europe 2014
 visit "http://www.finovate.com/europe14vid/"
-shows = GDBM.new("shows.db")
+shows = []]
 
 show_year = "2014"
 location = "Europe"
@@ -22,14 +22,12 @@ all(:css, "#contentwrapper table tbody tr td table:nth-child(3) tbody tr td div 
     video_show = td.first(:css, "a").text
     url = td.first(:css, "a", {:visible => true})["href"]
 
-    next if shows[url]
-
-    shows[url] = JSON.dump(
+    shows << {
       video_show: video_show,
       show_year: show_year,
       location: location,
       url: url
-    )
+    }
   end
 end
 
@@ -49,9 +47,7 @@ def sanitize_key(string)
 end
 
 # Click through each show's link and save company details and key stats. Also save in gdbm so on restart don't overwrite ones already completed.
-shows.each do |url, json|
-  show = JSON.load(json)
-  next if show["key_customers"]
+shows.each do |show|
 
   # Use nokogiri to get company details and company profile in raw HTML
   doc = Nokogiri::HTML(open("#{url}"))
@@ -59,11 +55,14 @@ shows.each do |url, json|
 
   # Save entire company profile from td, add it line by line to company_profile until we've captured only necessary profile data
   # (nothing from and after "Product distribution strategy:")
-  company_profile = ""
-  profile = nokogiri_page.css('#contentwrapper > table > tr > td > table:nth-child(3) > tr > td > div > table > tr > td.cellpadding-left').inner_html
+  profile = doc.css('#contentwrapper > table > tr > td > table:nth-child(3) > tr > td > div > table > tr > td.cellpadding-left').inner_html
+  company_profile = []
   profile.split("\n").each do |line|
-    next if line.match(/presenter\s+profile/i)
-    break if line.match(/product\s+distribution\s+strategy/i) || line.match(/Key/)
+    if line.match(/product\s+distribution\s+strategy/i) || line.match(/Key/)
+      company_profile.shift
+      company_profile.join("\n")
+      break
+    end
     company_profile << line
   end
 
@@ -93,20 +92,20 @@ shows.each do |url, json|
   end
 
   # Reassign values in hash, dump JSON as value to url key in database
-  show["company_details"] = company_details
-  show["company_profile"] = company_profile
-  show["key_execs"] = key_execs
-  show["key_board_members"] = key_board_members
-  show["key_advisory_board_members"] = key_advisory_board_members
-  show["key_investors"] = key_investors
-  show["key_partnerships"] = key_partnerships
-  show["key_customers"] = key_customers
+  show[:company_details] = company_details
+  show[:company_profile] = company_profile
+  show[:key_execs] = key_execs
+  show[:key_board_members] = key_board_members
+  show[:key_advisory_board_members] = key_advisory_board_members
+  show[:key_investors] = key_investors
+  show[:key_partnerships] = key_partnerships
+  show[:key_customers] = key_customers
 
   shows[url] = JSON.dump(show)
 end
 
 # Write all data into CSV
-CSV.open('euro2k14.csv', 'w') do |csv|
+CSV.open('euro2k14_nosave.csv', 'w') do |csv|
   csv << [
     "Video Show",
     "Show year",
@@ -121,21 +120,20 @@ CSV.open('euro2k14.csv', 'w') do |csv|
     "Company Profile",
     "Url"
   ]
-  shows.each do |url, json|
-    show = JSON.load(json)
+  shows.each do |show|
     csv << [
-      show["video_show"],
-      show["show_year"],
-      show["location"],
-      show["key_execs"],
-      show["key_board_members"],
-      show["key_advisory_board_members"],
-      show["key_investors"],
-      show["key_partnerships"],
-      show["key_customers"],
-      show["company_details"],
-      show["company_profile"],
-      show["url"]
+      show[:video_show],
+      show[:show_year],
+      show[:location],
+      show[:key_execs],
+      show[:key_board_members],
+      show[:key_advisory_board_members],
+      show[:key_investors],
+      show[:key_partnerships],
+      show[:key_customers],
+      show[:company_details],
+      show[:company_profile],
+      show[:url]
     ]
   end
 end
