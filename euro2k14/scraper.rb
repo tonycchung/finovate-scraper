@@ -60,7 +60,7 @@ shows.each do |url, json|
   # Save entire company profile from td, add it line by line to company_profile until we've captured only necessary profile data
   # (nothing from and after "Product distribution strategy:")
   company_profile = ""
-  profile = nokogiri_page.css('#contentwrapper > table > tr > td > table:nth-child(3) > tr > td > div > table > tr > td.cellpadding-left').inner_html
+  profile = doc.css('#contentwrapper > table > tr > td > table:nth-child(3) > tr > td > div > table > tr > td.cellpadding-left').inner_html
   profile.split("\n").each do |line|
     next if line.match(/presenter\s+profile/i)
     break if line.match(/product\s+distribution\s+strategy/i) || line.match(/Key/)
