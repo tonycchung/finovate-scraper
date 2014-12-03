@@ -9,29 +9,30 @@ class Scraper
   include Capybara::DSL
   Capybara.default_driver = :selenium
 
-  def initialize(show_name, year, location, url)
+  attr_accessor :shows
+  def initialize(show_name, year, location, main_url)
     Capybara.default_driver = :poltergeist
     @shows = GDBM.new("#{show_name}.db")
     @show_name = show_name
     @year = year
     @location = location
-    @url = url
+    @main_url = main_url
   end
 
   def get_shows(shows_td)
-    visit "#{url}"
+    visit "#{@main_url}"
     all(:css, "#{shows_td}").each do |td|
       if td.first(:css, "a", {visible: true})
         video_show = td.first(:css, "a").text
         url = td.first(:css, "a", {:visible => true})["href"]
 
-        next if shows[url]
+        next if @shows[url]
 
         @shows[url] = JSON.dump(
           video_show: video_show,
-          show_year: show_year,
-          location: location,
-          url: url
+          show_year: @year,
+          location: @location,
+          show_url: url
         )
       end
     end
@@ -44,7 +45,7 @@ class Scraper
       next if show["company_profile"]
 
       # Use nokogiri to get company details and company profile in raw HTML
-      doc = Nokogiri::HTML(open("#{url}"))
+      doc = Nokogiri::HTML(open("http://www.finovate.com/spring14vid/#{url}"))
       company_details = doc.css("#{css_details}").inner_html
 
       # Save entire company profile from td, add it line by line to company_profile until we've captured only necessary profile data
@@ -59,11 +60,11 @@ class Scraper
 
       show["company_details"] = company_details
       show["company_profile"] = company_profile
-      shows[url] = JSON.dump(show)
+      @shows[url] = JSON.dump(show)
     end
   end
 
-  def get_key_stats(css_key_stats)
+  def get_key_stats(xpath_key_stats)
     @shows.each do |url, json|
       show = JSON.load(json)
       next if show["key_customers"]
@@ -78,7 +79,7 @@ class Scraper
 
       # Go through every p tag in each td and save whichever key data it contains
       visit "#{url}"
-      within(:css, "#{css_key_stats}") do
+      within(:css, "#{xpath_key_stats}") do
         all(:css, 'p').each do |p|
           p = p.text
 
@@ -104,7 +105,7 @@ class Scraper
 
   def output_csv
     # Write all data into CSV
-    CSV.open("#{showname}.csv", 'w') do |csv|
+    CSV.open("#{@show_name}.csv", 'w') do |csv|
       csv << [
         "Video Show",
         "Show year",

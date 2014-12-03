@@ -20,7 +20,7 @@ def sanitize_key(string)
   arry.join(', ')
 end
 
-url = "http://www.finovate.com/europe14vid/mobino.html"
+url = "http://www.finovate.com/spring14vid/"
 nokogiri_page = Nokogiri::HTML(open("#{url}"))
 company_description = nokogiri_page.css('#contentwrapper > table > tr > td > table:nth-child(3) > tr > td > table > tr > td:nth-child(2) > p').inner_html
 
