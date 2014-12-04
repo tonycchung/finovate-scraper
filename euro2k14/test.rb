@@ -20,22 +20,23 @@ def sanitize_key(string)
   arry.join(', ')
 end
 
-url = "http://www.finovate.com/spring14vid/"
-nokogiri_page = Nokogiri::HTML(open("#{url}"))
-company_description = nokogiri_page.css('#contentwrapper > table > tr > td > table:nth-child(3) > tr > td > table > tr > td:nth-child(2) > p').inner_html
+url = "http://www.finovate.com/europe14vid/temenos.html"
+# nokogiri_page = Nokogiri::HTML(open("#{url}"))
+# company_description = nokogiri_page.css('#contentwrapper > table > tr > td > table:nth-child(3) > tr > td > table > tr > td:nth-child(2) > p').inner_html
 
-company_profile = ""
-profile = nokogiri_page.css('#contentwrapper > table > tr > td > table:nth-child(3) > tr > td > div > table > tr > td.cellpadding-left').inner_html
-profile.split("\n").each do |line|
-  next if line.match(/presenter\s+profile/i)
-  break if line.match(/product\s+distribution\s+strategy/i) || line.match(/Key/)
-  company_profile << line
-end
+# company_profile = ""
+# profile = nokogiri_page.css('#contentwrapper > table > tr > td > table:nth-child(3) > tr > td > div > table > tr > td.cellpadding-left').inner_html
+# profile.split("\n").each do |line|
+#   next if line.match(/presenter\s+profile/i)
+#   break if line.match(/product\s+distribution\s+strategy/i) || line.match(/Key/)
+#   company_profile << line
+# end
 
-CSV.open('test_gen.csv', 'w') do |csv|
-  csv << ['a', 'profile']
-  csv << [company_description, company_profile]
-end
+# image = nokogiri_page.css('#contentwrapper table tr td table:nth-child(3) tr td table tr td:nth-child(1) div a img')
+# CSV.open('test_gen.csv', 'w') do |csv|
+#   csv << ['a', 'profile']
+#   csv << [company_description, company_profile]
+# end
 
 # key_execs = nil
 # key_board_members = nil
@@ -44,8 +45,9 @@ end
 # key_partnerships = nil
 # key_customers = nil
 
-# visit "#{url}"
-
+visit "#{url}"
+image = find(:xpath, '//table/tbody/tr/td/table[2]/tbody/tr/td/table/tbody/tr/td[1]/div/a/img')['src']
+p image
 # # Go through every p tag in each td and save whichever key data it contains
 # within(:xpath, '//table/tbody/tr/td/table[2]/tbody/tr/td/div/table/tbody/tr/td[1]') do
 #   all(:xpath, './/p').each do |p|

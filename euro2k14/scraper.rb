@@ -10,13 +10,13 @@ include Capybara::DSL
 Capybara.default_driver = :selenium
 
 # Europe 2014
-visit "http://www.finovate.com/europe14vid/"
+# visit "http://www.finovate.com/europe14vid/"
 shows = GDBM.new("shows.db")
 
 show_year = "2014"
 location = "Europe"
 
-# Save each show, year, location and url in 'shows' gdbm
+Save each show, year, location and url in 'shows' gdbm
 all(:css, "#contentwrapper table tbody tr td table:nth-child(3) tbody tr td div table tbody tr td").each do |td|
   if td.first(:css, "a", {visible: true})
     video_show = td.first(:css, "a").text
@@ -68,6 +68,18 @@ shows.each do |url, json|
   end
 
   # Use capybara for rest of data
+
+  image = ''
+  visit "#{url}"
+  within(:css, "#contentwrapper > table > tbody > tr > td > table:nth-child(3) > tbody > tr > td > table > tbody > tr > td:nth-child(1) > div") do
+    all(:css, 'a').each do |a|
+      image = a.find('img')['src']
+    end
+  end
+  show["image1"] = image1
+
+  has_content?(show["video_show"]) or raise "couldn't load #{url}"
+
   key_execs = nil
   key_board_members = nil
   key_advisory_board_members = nil
@@ -75,10 +87,7 @@ shows.each do |url, json|
   key_partnerships = nil
   key_customers = nil
 
-  visit "#{url}"
-  has_content?(show["video_show"]) or raise "couldn't load #{url}"
-
-  # Go through every p tag in each td and save whichever key data it contains
+  Go through every p tag in each td and save whichever key data it contains
   within(:xpath, '//table/tbody/tr/td/table[2]/tbody/tr/td/div/table/tbody/tr/td[1]') do
     all(:xpath, './/p').each do |p|
       p = p.text
@@ -101,7 +110,7 @@ shows.each do |url, json|
   show["key_investors"] = key_investors
   show["key_partnerships"] = key_partnerships
   show["key_customers"] = key_customers
-
+  show["image"] = image
   shows[url] = JSON.dump(show)
 end
 
@@ -119,7 +128,8 @@ CSV.open('euro2k14.csv', 'w') do |csv|
     "Key Customers",
     "Company Details",
     "Company Profile",
-    "Url"
+    "Url",
+    "Image",
   ]
   shows.each do |url, json|
     show = JSON.load(json)
@@ -135,7 +145,8 @@ CSV.open('euro2k14.csv', 'w') do |csv|
       show["key_customers"],
       show["company_details"],
       show["company_profile"],
-      show["url"]
+      show["url"],
+      show["image"]
     ]
   end
 end

@@ -10,11 +10,11 @@ include Capybara::DSL
 Capybara.default_driver = :selenium
 
 # Europe 2014
-visit "http://www.finovate.com/spring14vid/"
+visit "http://www.finovate.com/fall14vid/"
 shows = GDBM.new("shows.db")
 
 show_year = "2014"
-location = "Spring"
+location = "New York"
 
 # Save each show, year, location and url in 'shows' gdbm
 all(:css, "#contentwrapper table tbody tr td table:nth-child(3) tbody tr td div table tbody tr td").each do |td|
@@ -68,6 +68,8 @@ shows.each do |url, json|
   end
 
   # Use capybara for rest of data
+
+  # Save company logo
   image = ''
   visit "#{url}"
   within(:css, "#contentwrapper > table > tbody > tr > td > table:nth-child(3) > tbody > tr > td > table > tbody > tr > td:nth-child(1) > div") do
@@ -86,7 +88,14 @@ shows.each do |url, json|
   key_customers = nil
 
   # Go through every p tag in each td and save whichever key data it contains
-  within(:xpath, '//table/tbody/tr/td/table[2]/tbody/tr/td/div/table/tbody/tr/td[1]') do
+
+  if page.has_selector?(:xpath, '//table/tbody/tr/td/table[2]/tbody/tr/td/div/table/tbody/tr/td[1]')
+    key_xpath = '//table/tbody/tr/td/table[2]/tbody/tr/td/div/table/tbody/tr/td[1]'
+  else
+    key_xpath = '//table/tbody/tr/td/table[2]/tbody/tr/td/div/div/table/tbody/tr/td[1]'
+  end
+
+  within(:xpath, "#{key_xpath}") do
     all(:xpath, './/p').each do |p|
       p = p.text
 
@@ -113,7 +122,7 @@ shows.each do |url, json|
 end
 
 # Write all data into CSV
-CSV.open('spring2k14.csv', 'w') do |csv|
+CSV.open('fall2k14.csv', 'w') do |csv|
   csv << [
     "Video Show",
     "Show year",
