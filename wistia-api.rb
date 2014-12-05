@@ -21,15 +21,15 @@ CSV.open('videos.csv', 'w') do |csv|
     resource.elements.each do |media|
 
       conference = "#{media.attributes[:project].attributes[:name]}"
-      name = "#{media.attributes[:name]}"
+      name = "#{media.attributes[:name]}".match /^.*[^\.mov]/.to_s
       embed_code = "//fast.wistia.net/embed/iframe/#{media.attributes[:hashed_id]}"
-      featured_image = "#{media.attributes[:thumbnail].attributes[:url]}".match /^.*(jpg)/.to_s
+      thumbnail = "#{media.attributes[:thumbnail].attributes[:url]}".match /^.*(jpg)/.to_s
 
       csv << [
               conference,
               name,
               embed_code,
-              featured_image
+              thumbnail
              ]
     end
   end

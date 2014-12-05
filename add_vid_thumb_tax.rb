@@ -5,15 +5,15 @@ class Adder
   def initialize(csv)
     @headers = ["Video Show","Show year","Location","Key Execs","Key Board Members","Key Advisory Board Members","Key Investors","Key Partnerships","Key Customers","Company Details","Company Profile","Url","Logo","Embed Code","Thumbnail"]
     @csv = csv
+    @arry2 = CSV.read("videos.csv", {headers: false})
   end
 
   def add_video
     # Add video embed code
-    arry = CSV.read("#{@csv}", {headers: false})
-    arry2 = CSV.read("videos.csv", {headers: false})
+    arry = CSV.read("#{@csv}", {headers: true})
 
     arry.each do |row|
-      arry2.each do |row2|
+      @arry2.each do |row2|
         row << "#{row2[3]}" if row[0] == row2[1]
       end
     end
@@ -28,9 +28,9 @@ class Adder
 
   def add_thumb
     # Add video thumbnail
-    arry = CSV.read("plus_video.csv", {headers: false})
+    arry = CSV.read("plus_video.csv", {headers: true})
     arry.each do |row|
-      arry2.each do |row2|
+      @arry2.each do |row2|
         row << "#{row2[3]}" if row[13] == row2[2]
       end
     end
@@ -54,7 +54,7 @@ class Adder
           Regexp.new('[u-zU-Z]') => "[U-Z]"
         }
 
-    arry = CSV.read("plus_thumbnail.csv", {headers: false})
+    arry = CSV.read("plus_thumbnail.csv", {headers: true})
 
     arry.each do |row|
       letter = row[0].slice(0,1)
@@ -73,14 +73,17 @@ class Adder
 
   def check_missing
     # Check for missing elements
-    arry = CSV.open('plus_tax.csv', 'wr')
+    count = 0
+    arry = CSV.open('plus_tax.csv', 'r')
     arry.each do |row|
       row.each_with_index do |e,i|
-        if e.nil?
-          p "#{headers[i]}: #{row[0]}" unless headers[i].match /Key/
+        if e.nil? || e == ""
+          p "#{@headers[i]}: #{row[0]}" unless @headers[i].match /Key/
+          count += 1
         end
       end
     end
+    p count
   end
 end
 
