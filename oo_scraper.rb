@@ -45,7 +45,7 @@ class Scraper
       next if show["company_profile"]
 
       # Use nokogiri to get company details and company profile in raw HTML
-      doc = Nokogiri::HTML(open("http://www.finovate.com/spring14vid/#{url}"))
+      doc = Nokogiri::HTML(open("#{url}"))
       company_details = doc.css("#{css_details}").inner_html
 
       # Save entire company profile from td, add it line by line to company_profile until we've captured only necessary profile data
@@ -64,10 +64,19 @@ class Scraper
     end
   end
 
-  def get_key_stats(xpath_key_stats)
+  def get_key_stats
     @shows.each do |url, json|
       show = JSON.load(json)
-      next if show["key_customers"]
+      next if show["key_execs"]
+
+      # Save company logo
+      logo = ''
+      visit "#{url}"
+      within(:css, "#contentwrapper > table > tbody > tr > td > table:nth-child(3) > tbody > tr > td > table > tbody > tr > td:nth-child(1) > div") do
+        all(:css, 'a').each do |a|
+          logo = a.find('img')['src']
+        end
+      end
 
       # Use capybara for rest of data
       key_execs = nil
@@ -78,9 +87,14 @@ class Scraper
       key_customers = nil
 
       # Go through every p tag in each td and save whichever key data it contains
-      visit "#{url}"
-      within(:css, "#{xpath_key_stats}") do
-        all(:css, 'p').each do |p|
+      if page.has_selector?(:xpath, '//table/tbody/tr/td/table[2]/tbody/tr/td/div/table/tbody/tr/td[1]')
+        key_xpath = '//table/tbody/tr/td/table[2]/tbody/tr/td/div/table/tbody/tr/td[1]'
+      else
+        key_xpath = '//table/tbody/tr/td/table[2]/tbody/tr/td/div/div/table/tbody/tr/td[1]'
+      end
+
+      within(:xpath, "#{key_xpath}") do
+        all(:xpath, './/p').each do |p|
           p = p.text
 
           key_execs                  = sanitize_key(p) if p.match(/Key\s+Executives/i)
@@ -99,6 +113,7 @@ class Scraper
       show["key_investors"] = key_investors
       show["key_partnerships"] = key_partnerships
       show["key_customers"] = key_customers
+      show["logo"] = logo
       shows[url] = JSON.dump(show)
     end
   end
@@ -118,7 +133,8 @@ class Scraper
         "Key Customers",
         "Company Details",
         "Company Profile",
-        "Url"
+        "Url",
+        "Logo"
       ]
       @shows.each do |url, json|
         show = JSON.load(json)
@@ -134,7 +150,8 @@ class Scraper
           show["key_customers"],
           show["company_details"],
           show["company_profile"],
-          show["url"]
+          show["url"],
+          show["logo"]
         ]
       end
     end
