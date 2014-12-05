@@ -9,18 +9,26 @@ Wistia.use_config!(:wistia => {
 })
 
 arry = []
-12.times do |x|
+20.times do |x|
+  break if Wistia::Media.find(:all, :params => {:page => "#{x+1}"}).elements.empty?
   arry << Wistia::Media.find(:all, :params => {:page => "#{x+1}"})
 end
 
 # ActiveResource -> @element -> WistiaMedia -> @attributes -> HashWithIndifferentAccess
 CSV.open('videos.csv', 'w') do |csv|
-  csv << ['Conference', 'name', 'embed_code']
+  csv << ['Conference', 'name', 'embed_code', 'featured_image']
   arry.each do |resource|
     resource.elements.each do |media|
-      csv << ["#{media.attributes[:project].attributes[:name]}",
-              "#{media.attributes[:name]}",
-              "//fast.wistia.net/embed/iframe/#{media.attributes[:hashed_id]}"
+
+      conference = "#{media.attributes[:project].attributes[:name]}"
+      name = "#{media.attributes[:name]}"
+      embed_code = "//fast.wistia.net/embed/iframe/#{media.attributes[:hashed_id]}"
+      featured_image = "#{media.attributes[:thumbnail].attributes[:url]}".match /^.*(jpg)/.to_s
+
+      csv << [conference,
+              name,
+              embed_code,
+              featured_image
              ]
     end
   end

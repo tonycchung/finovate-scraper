@@ -1,6 +1,6 @@
 require 'csv'
 
-arry = CSV.read("spring2k14.csv", {headers: false})
+arry = CSV.read("fall2k14.csv", {headers: false})
 arry2 = CSV.read("videos.csv", {headers: false})
 
 arry.each do |row|
