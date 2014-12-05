@@ -69,14 +69,14 @@ shows.each do |url, json|
 
   # Use capybara for rest of data
 
-  image = ''
+  logo = ''
   visit "#{url}"
   within(:css, "#contentwrapper > table > tbody > tr > td > table:nth-child(3) > tbody > tr > td > table > tbody > tr > td:nth-child(1) > div") do
     all(:css, 'a').each do |a|
-      image = a.find('img')['src']
+      logo = a.find('img')['src']
     end
   end
-  show["image1"] = image1
+  show["logo"] = logo
 
   has_content?(show["video_show"]) or raise "couldn't load #{url}"
 
@@ -110,7 +110,7 @@ shows.each do |url, json|
   show["key_investors"] = key_investors
   show["key_partnerships"] = key_partnerships
   show["key_customers"] = key_customers
-  show["image"] = image
+  show["logo"] = logo
   shows[url] = JSON.dump(show)
 end
 
@@ -129,7 +129,7 @@ CSV.open('euro2k14.csv', 'w') do |csv|
     "Company Details",
     "Company Profile",
     "Url",
-    "Image",
+    "Logo",
   ]
   shows.each do |url, json|
     show = JSON.load(json)
@@ -146,7 +146,7 @@ CSV.open('euro2k14.csv', 'w') do |csv|
       show["company_details"],
       show["company_profile"],
       show["url"],
-      show["image"]
+      show["logo"]
     ]
   end
 end

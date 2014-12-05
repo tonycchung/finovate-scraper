@@ -16,7 +16,7 @@ require 'csv'
 #   end
 # end
 
-# headers = ["Video Show","Show year","Location","Key Execs","Key Board Members","Key Advisory Board Members","Key Investors","Key Partnerships","Key Customers","Company Details","Company Profile","Url","Image","Embed Code"]
+headers = ["Video Show","Show year","Location","Key Execs","Key Board Members","Key Advisory Board Members","Key Investors","Key Partnerships","Key Customers","Company Details","Company Profile","Url","Image","Embed Code", "Thumbnail"]
 # arry.each do |row|
 #   row.each_with_index do |e,i|
 #     if e.nil?
@@ -52,11 +52,12 @@ arry = CSV.read("euro2k14_master.csv", {headers: false})
 arry.each do |row|
   taxonomy = row[0].slice(0,1)
   hsh.each do |k, v|
-    row << hsh[taxonomy] if taxonomy.match /"#{k}"/i
+    row << hsh[k] if taxonomy.match /"#{k}"/i
   end
 end
 
 CSV.open('euro2k14_master_tax.csv', 'w') do |csv|
+  csv << headers
   arry.each do |row|
     csv << row
   end

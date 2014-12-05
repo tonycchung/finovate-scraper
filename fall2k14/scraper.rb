@@ -51,7 +51,7 @@ end
 # Click through each show's link and save company details and key stats. Also save in gdbm so on restart don't overwrite ones already completed.
 shows.each do |url, json|
   show = JSON.load(json)
-  next if show["key_execs"]
+  next if show["company_details"]
 
   # Use nokogiri to get company details and company profile in raw HTML
   doc = Nokogiri::HTML(open("#{url}"))
@@ -70,11 +70,11 @@ shows.each do |url, json|
   # Use capybara for rest of data
 
   # Save company logo
-  image = ''
+  logo = ''
   visit "#{url}"
   within(:css, "#contentwrapper > table > tbody > tr > td > table:nth-child(3) > tbody > tr > td > table > tbody > tr > td:nth-child(1) > div") do
     all(:css, 'a').each do |a|
-      image = a.find('img')['src']
+      logo = a.find('img')['src']
     end
   end
 
@@ -117,7 +117,7 @@ shows.each do |url, json|
   show["key_investors"] = key_investors
   show["key_partnerships"] = key_partnerships
   show["key_customers"] = key_customers
-  show["image"] = image
+  show["logo"] = logo
   shows[url] = JSON.dump(show)
 end
 
@@ -136,7 +136,7 @@ CSV.open('fall2k14.csv', 'w') do |csv|
     "Company Details",
     "Company Profile",
     "Url",
-    "Image",
+    "Logo",
   ]
   shows.each do |url, json|
     show = JSON.load(json)
@@ -153,7 +153,7 @@ CSV.open('fall2k14.csv', 'w') do |csv|
       show["company_details"],
       show["company_profile"],
       show["url"],
-      show["image"],
+      show["logo"],
     ]
   end
 end
