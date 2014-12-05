@@ -67,7 +67,7 @@ class Scraper
   def get_key_stats
     @shows.each do |url, json|
       show = JSON.load(json)
-      next if show["key_execs"]
+      next if show["contacts"]
 
       # Save company logo
       logo = ''
@@ -79,6 +79,8 @@ class Scraper
       end
 
       # Use capybara for rest of data
+      contacts = nil
+      product_dist_strat = nil
       key_execs = nil
       key_board_members = nil
       key_advisory_board_members = nil
@@ -94,15 +96,18 @@ class Scraper
       end
 
       within(:xpath, "#{key_xpath}") do
+        count = 0
         all(:xpath, './/p').each do |p|
           p = p.text
 
+          product_dist_strat         = sanitize_prod_dist(p) if p.match(/product\s+distribution\s+strategy/i)
           key_execs                  = sanitize_key(p) if p.match(/Key\s+Executives/i)
           key_board_members          = sanitize_key(p) if p.match(/Key\s+Board\s+Members/i)
           key_advisory_board_members = sanitize_key(p) if p.match(/Key\s+Advisory\s+Board\s+Members/i)
           key_investors              = sanitize_key(p) if p.match(/Key\s+Investors/i)
           key_partnerships           = sanitize_key(p) if p.match(/Key\s+Partnerships/i)
           key_customers              = sanitize_key(p) if p.match(/Key\s+Customers/i)
+          contacts = nokogiri_page.xpath("//table/tr/td/table[2]/tr/td/div/table/tr/td[1]/p[#{count}]").inner_html if p.match /Contacts:/
         end
       end
 
@@ -114,6 +119,7 @@ class Scraper
       show["key_partnerships"] = key_partnerships
       show["key_customers"] = key_customers
       show["logo"] = logo
+      show["contacts"] = contacts
       shows[url] = JSON.dump(show)
     end
   end
@@ -133,6 +139,7 @@ class Scraper
         "Key Customers",
         "Company Details",
         "Company Profile",
+        "Contacts",
         "Url",
         "Logo"
       ]
@@ -150,6 +157,7 @@ class Scraper
           show["key_customers"],
           show["company_details"],
           show["company_profile"],
+          show["contacts"],
           show["url"],
           show["logo"]
         ]
@@ -173,4 +181,11 @@ private
       arry.first.slice!(0,1)
     end
     arry.join(',')
+  end
+
+  def sanitize_prod_dist(string)
+    result = string.match(/[^product\s+distribution\s+strategy].*/i).to_s
+    result.slice!(0,1)
+    result.lstrip!
+    result
   end

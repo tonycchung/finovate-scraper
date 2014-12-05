@@ -48,30 +48,37 @@ def sanitize_key(string)
   arry.join(',')
 end
 
+def sanitize_prod_dist(string)
+  result = string.match(/[^product\s+distribution\s+strategy].*/i).to_s
+  result.slice!(0,1)
+  result.lstrip!
+  result
+end
+
 # Click through each show's link and save company details and key stats. Also save in gdbm so on restart don't overwrite ones already completed.
 shows.each do |url, json|
   show = JSON.load(json)
   next unless show["logo"] = ''
 
   # Use nokogiri to get company details and company profile in raw HTML
-  # doc = Nokogiri::HTML(open("#{url}"))
-  # company_details = doc.css('#contentwrapper > table > tr > td > table:nth-child(3) > tr > td > table > tr > td:nth-child(2) > p').inner_html
+  doc = Nokogiri::HTML(open("#{url}"))
+  company_details = doc.css('#contentwrapper > table > tr > td > table:nth-child(3) > tr > td > table > tr > td:nth-child(2) > p').inner_html
 
-  # # Save entire company profile from td, add it line by line to company_profile until we've captured only necessary profile data
-  # # (nothing from and after "Product distribution strategy:")
-  # company_profile = ""
-  # profile_css = '#contentwrapper > table > tr > td > table:nth-child(3) > tr > td > div > table > tr > td.cellpadding-left'
-  # profile_css = '#contentwrapper > table > tr > td > table:nth-child(3) > tr > td > div > div > table > tr > td.cellpadding-left' if doc.css(profile_css).inner_html.empty?
-  # profile = doc.css(profile_css).inner_html
+  # Save entire company profile from td, add it line by line to company_profile until we've captured only necessary profile data
+  # (nothing from and after "Product distribution strategy:")
+  company_profile = ""
+  profile_css = '#contentwrapper > table > tr > td > table:nth-child(3) > tr > td > div > table > tr > td.cellpadding-left'
+  profile_css = '#contentwrapper > table > tr > td > table:nth-child(3) > tr > td > div > div > table > tr > td.cellpadding-left' if doc.css(profile_css).inner_html.empty?
+  profile = doc.css(profile_css).inner_html
 
-  # profile.split("\n").each do |line|
-  #   next if line.match(/presenter\s+profile/i)
-  #   break if line.match(/product\s+distribution\s+strategy/i) || line.match(/Key/)
-  #   company_profile << line
-  # end
+  # Save company profile raw HTML
+  profile.split("\n").each do |line|
+    next if line.match(/presenter\s+profile/i)
+    break if line.match(/product\s+distribution\s+strategy/i) || line.match(/Key/)
+    company_profile << line
+  end
 
   # Use capybara for rest of data
-
   # Save company logo
   logo = ''
   visit "#{url}"
@@ -81,86 +88,47 @@ shows.each do |url, json|
     end
   end
 
-  # has_content?(show["video_show"]) or raise "couldn't load #{url}"
+  has_content?(show["video_show"]) or raise "couldn't load #{url}"
 
-  # key_execs = nil
-  # key_board_members = nil
-  # key_advisory_board_members = nil
-  # key_investors = nil
-  # key_partnerships = nil
-  # key_customers = nil
+  product_dist_strat = nil
+  key_execs = nil
+  key_board_members = nil
+  key_advisory_board_members = nil
+  key_investors = nil
+  key_partnerships = nil
+  key_customers = nil
 
-  # # Go through every p tag in each td and save whichever key data it contains
+  # Go through every p tag in each td and save whichever key data it contains
+  if page.has_selector?(:xpath, '//table/tbody/tr/td/table[2]/tbody/tr/td/div/table/tbody/tr/td[1]')
+    key_xpath = '//table/tbody/tr/td/table[2]/tbody/tr/td/div/table/tbody/tr/td[1]'
+  else
+    key_xpath = '//table/tbody/tr/td/table[2]/tbody/tr/td/div/div/table/tbody/tr/td[1]'
+  end
 
-  #   if page.has_selector?(:xpath, '//table/tbody/tr/td/table[2]/tbody/tr/td/div/table/tbody/tr/td[1]')
-  #     key_xpath = '//table/tbody/tr/td/table[2]/tbody/tr/td/div/table/tbody/tr/td[1]'
-  #   else
-  #     key_xpath = '//table/tbody/tr/td/table[2]/tbody/tr/td/div/div/table/tbody/tr/td[1]'
-  #   end
+  within(:xpath, "#{key_xpath}") do
+    all(:xpath, './/p').each do |p|
+      p = p.text
 
-  # within(:xpath, "#{key_xpath}") do
-  #   all(:xpath, './/p').each do |p|
-  #     p = p.text
+      product_dist_strat         = sanitize_prod_dist(p) if p.match(/product\s+distribution\s+strategy/i)
+      key_execs                  = sanitize_key(p) if p.match(/Key\s+Executives/i)
+      key_board_members          = sanitize_key(p) if p.match(/Key\s+Board\s+Members/i)
+      key_advisory_board_members = sanitize_key(p) if p.match(/Key\s+Advisory\s+Board\s+Members/i)
+      key_investors              = sanitize_key(p) if p.match(/Key\s+Investors/i)
+      key_partnerships           = sanitize_key(p) if p.match(/Key\s+Partnerships/i)
+      key_customers              = sanitize_key(p) if p.match(/Key\s+Customers/i)
+    end
+  end
 
-  #     key_execs                  = sanitize_key(p) if p.match(/Key\s+Executives/i)
-  #     key_board_members          = sanitize_key(p) if p.match(/Key\s+Board\s+Members/i)
-  #     key_advisory_board_members = sanitize_key(p) if p.match(/Key\s+Advisory\s+Board\s+Members/i)
-  #     key_investors              = sanitize_key(p) if p.match(/Key\s+Investors/i)
-  #     key_partnerships           = sanitize_key(p) if p.match(/Key\s+Partnerships/i)
-  #     key_customers              = sanitize_key(p) if p.match(/Key\s+Customers/i)
-  #   end
-  # end
-
-  # # Reassign values in hash, dump JSON as value to url key in database
-  # show["company_details"] = company_details
-  # show["company_profile"] = company_profile
-  # show["key_execs"] = key_execs
-  # show["key_board_members"] = key_board_members
-  # show["key_advisory_board_members"] = key_advisory_board_members
-  # show["key_investors"] = key_investors
-  # show["key_partnerships"] = key_partnerships
-  # show["key_customers"] = key_customers
-  show["logo"] = logo
-
-  # has_content?(show["video_show"]) or raise "couldn't load #{url}"
-
-  # key_execs = nil
-  # key_board_members = nil
-  # key_advisory_board_members = nil
-  # key_investors = nil
-  # key_partnerships = nil
-  # key_customers = nil
-
-  # # Go through every p tag in each td and save whichever key data it contains
-
-  #   if page.has_selector?(:xpath, '//table/tbody/tr/td/table[2]/tbody/tr/td/div/table/tbody/tr/td[1]')
-  #     key_xpath = '//table/tbody/tr/td/table[2]/tbody/tr/td/div/table/tbody/tr/td[1]'
-  #   else
-  #     key_xpath = '//table/tbody/tr/td/table[2]/tbody/tr/td/div/div/table/tbody/tr/td[1]'
-  #   end
-
-  # within(:xpath, "#{key_xpath}") do
-  #   all(:xpath, './/p').each do |p|
-  #     p = p.text
-
-  #     key_execs                  = sanitize_key(p) if p.match(/Key\s+Executives/i)
-  #     key_board_members          = sanitize_key(p) if p.match(/Key\s+Board\s+Members/i)
-  #     key_advisory_board_members = sanitize_key(p) if p.match(/Key\s+Advisory\s+Board\s+Members/i)
-  #     key_investors              = sanitize_key(p) if p.match(/Key\s+Investors/i)
-  #     key_partnerships           = sanitize_key(p) if p.match(/Key\s+Partnerships/i)
-  #     key_customers              = sanitize_key(p) if p.match(/Key\s+Customers/i)
-  #   end
-  # end
-
-  # # Reassign values in hash, dump JSON as value to url key in database
-  # show["company_details"] = company_details
-  # show["company_profile"] = company_profile
-  # show["key_execs"] = key_execs
-  # show["key_board_members"] = key_board_members
-  # show["key_advisory_board_members"] = key_advisory_board_members
-  # show["key_investors"] = key_investors
-  # show["key_partnerships"] = key_partnerships
-  # show["key_customers"] = key_customers
+  # Reassign values in hash, dump JSON as value to url key in database
+  show["company_details"] = company_details
+  show["company_profile"] = company_profile
+  show["product_dist_strat"] = product_dist_strat
+  show["key_execs"] = key_execs
+  show["key_board_members"] = key_board_members
+  show["key_advisory_board_members"] = key_advisory_board_members
+  show["key_investors"] = key_investors
+  show["key_partnerships"] = key_partnerships
+  show["key_customers"] = key_customers
   show["logo"] = logo
   shows[url] = JSON.dump(show)
 end
@@ -179,8 +147,9 @@ CSV.open('fall2k14.csv', 'w') do |csv|
     "Key Customers",
     "Company Details",
     "Company Profile",
+    "Product Distribution Strategy"
     "Url",
-    "Logo",
+    "Logo"
   ]
   shows.each do |url, json|
     show = JSON.load(json)
@@ -196,8 +165,9 @@ CSV.open('fall2k14.csv', 'w') do |csv|
       show["key_customers"],
       show["company_details"],
       show["company_profile"],
+      show["product_dist_strat"],
       show["url"],
-      show["logo"],
+      show["logo"]
     ]
   end
 end
