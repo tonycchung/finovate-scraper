@@ -89,7 +89,7 @@ shows.each do |url, json|
 
   # Go through every p tag in each td and save whichever key data it contains
 
-  if page.has_selector?(:xpath, '//table/tbody/tr/td/table[2]/tbody/tr/td/div/table/tbody/tr/td[1]')
+    if page.has_selector?(:xpath, '//table/tbody/tr/td/table[2]/tbody/tr/td/div/table/tbody/tr/td[1]')
     key_xpath = '//table/tbody/tr/td/table[2]/tbody/tr/td/div/table/tbody/tr/td[1]'
   else
     key_xpath = '//table/tbody/tr/td/table[2]/tbody/tr/td/div/div/table/tbody/tr/td[1]'
