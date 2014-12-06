@@ -3,7 +3,24 @@ require 'csv'
 class Adder
 
   def initialize(csv)
-    @headers = ["Video Show","Show year","Location","Key Execs","Key Board Members","Key Advisory Board Members","Key Investors","Key Partnerships","Key Customers","Company Details","Company Profile","Product Distribution Strategy","Contacts","Url","Logo","Embed Code","Thumbnail","Taxonomy"]
+    @headers = ["Video Show",
+                "Show year",
+                "Location",
+                "Key Execs",
+                "Key Board Members",
+                "Key Advisory Board Members",
+                "Key Investors",
+                "Key Partnerships",
+                "Key Customers",
+                "Company Details",
+                "Company Profile",
+                "Product Distribution Strategy",
+                "Contacts",
+                "Url",
+                "Logo",
+                "Embed Code",
+                "Thumbnail",
+                "Taxonomy"]
     @csv = csv
     @videos_csv = CSV.read("videos.csv", {headers: false})
   end
@@ -14,7 +31,7 @@ class Adder
 
     arry.each do |row|
       @videos_csv.each do |video_row|
-        row << "#{video_row[2]}" if row[0].split(' ').join.downcase == video_row[1].downcase
+        row << "#{video_row[2]}" if row[0].split(' ').join.downcase == video_row[1].split(' ').join.downcase
       end
     end
 
@@ -71,15 +88,17 @@ class Adder
     end
   end
 
-  def check_missing
+  def check_missing(csv)
     # Check for missing elements
     count = 0
-    arry = CSV.open("#{@csv}_plus_video_thumb_tax.csv", 'r')
+    arry = CSV.open(csv, 'r')
     arry.each do |row|
       row.each_with_index do |e,i|
         if e.nil? || e == ""
-          p "#{@headers[i]}: #{row[0]}" unless @headers[i].match /Key/
-          count += 1
+          unless @headers[i].match /Key|Embed/
+            p "#{@headers[i]}: #{row[0]}"
+            count += 1
+          end
         end
       end
     end
