@@ -16,7 +16,7 @@ shows = GDBM.new("shows.db")
 show_year = "2014"
 location = "Europe"
 
-Save each show, year, location and url in 'shows' gdbm
+# Save each show, year, location and url in 'shows' gdbm
 all(:css, "#contentwrapper table tbody tr td table:nth-child(3) tbody tr td div table tbody tr td").each do |td|
   if td.first(:css, "a", {visible: true})
     video_show = td.first(:css, "a").text
@@ -58,23 +58,23 @@ end
 # Click through each show's link and save company details and key stats. Also save in gdbm so on restart don't overwrite ones already completed.
 shows.each do |url, json|
   show = JSON.load(json)
-  next if show["key_customers"]
+  # next if show["contacts"]
 
-  # Use nokogiri to get company details and company profile in raw HTML
+  # # Use nokogiri to get company details and company profile in raw HTML
   doc = Nokogiri::HTML(open("#{url}"))
-  company_details = doc.css('#contentwrapper > table > tr > td > table:nth-child(3) > tr > td > table > tr > td:nth-child(2) > p').inner_html
+  # company_details = doc.css('#contentwrapper > table > tr > td > table:nth-child(3) > tr > td > table > tr > td:nth-child(2) > p').inner_html
 
-  # Save entire company profile from td, add it line by line to company_profile until we've captured only necessary profile data
-  # (nothing from and after "Product distribution strategy:")
-  company_profile = ""
-  profile = doc.css('#contentwrapper > table > tr > td > table:nth-child(3) > tr > td > div > table > tr > td.cellpadding-left').inner_html
-  profile.split("\n").each do |line|
-    next if line.match(/presenter\s+profile/i)
-    break if line.match(/product\s+distribution\s+strategy/i) || line.match(/Key/)
-    company_profile << line
-  end
+  # # Save entire company profile from td, add it line by line to company_profile until we've captured only necessary profile data
+  # # (nothing from and after "Product distribution strategy:")
+  # company_profile = ""
+  # profile = doc.css('#contentwrapper > table > tr > td > table:nth-child(3) > tr > td > div > table > tr > td.cellpadding-left').inner_html
+  # profile.split("\n").each do |line|
+  #   next if line.match(/presenter\s+profile/i)
+  #   break if line.match(/product\s+distribution\s+strategy/i) || line.match(/Key/)
+  #   company_profile << line
+  # end
 
-  # Use capybara for rest of data
+  # # Use capybara for rest of data
   logo = ''
   visit "#{url}"
   within(:css, "#contentwrapper > table > tbody > tr > td > table:nth-child(3) > tbody > tr > td > table > tbody > tr > td:nth-child(1) > div") do
@@ -82,49 +82,48 @@ shows.each do |url, json|
       logo = a.find('img')['src']
     end
   end
-  show["logo"] = logo
 
   has_content?(show["video_show"]) or raise "couldn't load #{url}"
 
   contacts = nil
-  product_dist_strat = nil
-  key_execs = nil
-  key_board_members = nil
-  key_advisory_board_members = nil
-  key_investors = nil
-  key_partnerships = nil
-  key_customers = nil
+  # product_dist_strat = nil
+  # key_execs = nil
+  # key_board_members = nil
+  # key_advisory_board_members = nil
+  # key_investors = nil
+  # key_partnerships = nil
+  # key_customers = nil
 
-  Go through every p tag in each td and save whichever key data it contains
+  # Go through every p tag in each td and save whichever key data it contains
   within(:xpath, '//table/tbody/tr/td/table[2]/tbody/tr/td/div/table/tbody/tr/td[1]') do
     count = 0
     all(:xpath, './/p').each do |p|
+      count += 1
       p = p.text
 
-      product_dist_strat         = sanitize_prod_dist(p) if p.match(/product\s+distribution\s+strategy/i)
-      key_execs                  = sanitize_key(p)       if p.match(/Key\s+Executives/i)
-      key_board_members          = sanitize_key(p)       if p.match(/Key\s+Board\s+Members/i)
-      key_advisory_board_members = sanitize_key(p)       if p.match(/Key\s+Advisory\s+Board\s+Members/i)
-      key_investors              = sanitize_key(p)       if p.match(/Key\s+Investors/i)
-      key_partnerships           = sanitize_key(p)       if p.match(/Key\s+Partnerships/i)
-      key_customers              = sanitize_key(p)       if p.match(/Key\s+Customers/i)
-      contacts = nokogiri_page.xpath("//table/tr/td/table[2]/tr/td/div/table/tr/td[1]/p[#{count}]").inner_html if p.match /Contacts:/
+      contacts = doc.xpath("//table/tr/td/table[2]/tr/td/div/table/tr/td[1]/p[#{count}]").inner_html if p.match /Contacts:/
+    #   product_dist_strat         = sanitize_prod_dist(p) if p.match(/product\s+distribution\s+strategy/i)
+    #   key_execs                  = sanitize_key(p)       if p.match(/Key\s+Executives/i)
+    #   key_board_members          = sanitize_key(p)       if p.match(/Key\s+Board\s+Members/i)
+    #   key_advisory_board_members = sanitize_key(p)       if p.match(/Key\s+Advisory\s+Board\s+Members/i)
+    #   key_investors              = sanitize_key(p)       if p.match(/Key\s+Investors/i)
+    #   key_partnerships           = sanitize_key(p)       if p.match(/Key\s+Partnerships/i)
+    #   key_customers              = sanitize_key(p)       if p.match(/Key\s+Customers/i)
     end
   end
 
   # Reassign values in hash, dump JSON as value to url key in database
-  show["company_details"] = company_details
-  show["company_profile"] = company_profile
+  # show["company_details"] = company_details
+  # show["company_profile"] = company_profile
   show["contacts"] = contacts
-  show["product_dist_strat"] = product_dist_strat
-  show["key_execs"] = key_execs
-  show["key_board_members"] = key_board_members
-  show["key_advisory_board_members"] = key_advisory_board_members
-  show["key_investors"] = key_investors
-  show["key_partnerships"] = key_partnerships
-  show["key_customers"] = key_customers
+  # show["product_dist_strat"] = product_dist_strat
+  # show["key_execs"] = key_execs
+  # show["key_board_members"] = key_board_members
+  # show["key_advisory_board_members"] = key_advisory_board_members
+  # show["key_investors"] = key_investors
+  # show["key_partnerships"] = key_partnerships
+  # show["key_customers"] = key_customers
   show["logo"] = logo
-  show["contacts"] = contacts
   shows[url] = JSON.dump(show)
 end
 

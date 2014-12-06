@@ -27,7 +27,7 @@ def sanitize_prod_dist(string)
   result
 end
 
-url = "http://www.finovate.com/europe14vid/amp.html"
+url = "http://www.finovate.com/europe14vid/temenos.html"
 nokogiri_page = Nokogiri::HTML(open("#{url}"))
 company_description = nokogiri_page.css('#contentwrapper > table > tr > td > table:nth-child(3) > tr > td > table > tr > td:nth-child(2) > p').inner_html
 
@@ -40,10 +40,6 @@ profile.split("\n").each do |line|
 end
 
 image = nokogiri_page.css('#contentwrapper table tr td table:nth-child(3) tr td table tr td:nth-child(1) div a img')
-CSV.open('test_gen.csv', 'w') do |csv|
-  csv << ['a', 'profile']
-  csv << [company_description, company_profile]
-end
 
 contacts = nil
 product_dist_strat = nil
@@ -65,7 +61,7 @@ within(:css, "#contentwrapper > table > tbody > tr > td > table:nth-child(3) > t
 end
 
 # Go through every p tag in each td and save whichever key data it contains
-within(:xpath, '//table/tr/td/table[2]/tr/td/div/table/tr/td[1]') do
+within(:xpath, '//table/tbody/tr/td/table[2]/tbody/tr/td/div/table/tbody/tr/td[1]') do
   count = 0
   all(:xpath, './/p').each do |p|
     count += 1
@@ -82,8 +78,8 @@ within(:xpath, '//table/tr/td/table[2]/tr/td/div/table/tr/td[1]') do
   end
 end
 
-# puts contacts
-# puts product_dist_strat
+puts contacts
+puts product_dist_strat
 # puts key_execs
 # puts key_board_members
 # puts key_advisory_board_members

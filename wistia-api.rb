@@ -21,7 +21,7 @@ CSV.open('videos.csv', 'w') do |csv|
     resource.elements.each do |media|
 
       conference = "#{media.attributes[:project].attributes[:name]}"
-      name = "#{media.attributes[:name]}".match /^.*[^\.mov]/.to_s
+      name = "#{media.attributes[:name]}".split.('.mov').first
       embed_code = "//fast.wistia.net/embed/iframe/#{media.attributes[:hashed_id]}"
       thumbnail = "#{media.attributes[:thumbnail].attributes[:url]}".match /^.*(jpg)/.to_s
 
