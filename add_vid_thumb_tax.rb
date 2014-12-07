@@ -18,6 +18,7 @@ class Adder
                 "Contacts",
                 "Url",
                 "Logo",
+                "Logo URL",
                 "Embed Code",
                 "Thumbnail",
                 "Taxonomy"]
@@ -36,7 +37,7 @@ class Adder
     end
 
     CSV.open("#{@csv}_plus_video.csv", 'w') do |csv|
-      csv << ["Video Show","Show year","Location","Key Execs","Key Board Members","Key Advisory Board Members","Key Investors","Key Partnerships","Key Customers","Company Details","Company Profile","Product Distribution Strategy","Contacts","Url","Logo","Embed Code"]
+      csv << ["Video Show","Show year","Location","Key Execs","Key Board Members","Key Advisory Board Members","Key Investors","Key Partnerships","Key Customers","Company Details","Company Profile","Product Distribution Strategy","Contacts","Url","Logo","Logo URL","Embed Code"]
       arry.each do |row|
         csv << row
       end
@@ -48,12 +49,12 @@ class Adder
     arry = CSV.read("#{@csv}_plus_video.csv", {headers: true})
     arry.each do |row|
       @videos_csv.each do |video_row|
-        row << "#{video_row[3]}" if row[15] == video_row[2]
+        row << "#{video_row[3]}" if row[16] == video_row[2]
       end
     end
 
     CSV.open("#{@csv}_plus_video_thumb.csv", 'w') do |csv|
-      csv << ["Video Show","Show year","Location","Key Execs","Key Board Members","Key Advisory Board Members","Key Investors","Key Partnerships","Key Customers","Company Details","Company Profile","Product Distribution Strategy","Contacts","Url","Logo","Embed Code","Thumbnail"]
+      csv << ["Video Show","Show year","Location","Key Execs","Key Board Members","Key Advisory Board Members","Key Investors","Key Partnerships","Key Customers","Company Details","Company Profile","Product Distribution Strategy","Contacts","Url","Logo","Logo URL","Embed Code","Thumbnail"]
       arry.each do |row|
         csv << row
       end
@@ -106,3 +107,4 @@ class Adder
   end
 end
 
+# {location[1]}{showyear[1]}{videoshow[1]}

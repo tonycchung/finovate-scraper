@@ -11,5 +11,8 @@ adder = Adder.new('euro2k14')
 # p 'adding tax'
 # adder.add_tax
 
+# p 'checking missing'
+# adder.check_missing('euro2k14_plus_video_thumb_tax.csv')
+
 p 'checking missing'
 adder.check_missing('euro2k14_master.csv')
