@@ -96,7 +96,7 @@ class Adder
     arry.each do |row|
       row.each_with_index do |e,i|
         if e.nil? || e == ""
-          unless @headers[i].match /Key|Embed/
+          unless @headers[i].match /Key|Embed|Product/
             p "#{@headers[i]}: #{row[0]}"
             count += 1
           end
