@@ -105,7 +105,7 @@ shows.each do |url, json|
 
   contacts_key_path = key_xpath.split('/').reject {|e| e == 'tbody'}.join('/')
 
-  within(:xpath, 'key_xpath') do
+  within(:xpath, key_xpath) do
     count = 0
     all(:xpath, './/p').each do |p|
       count += 1
@@ -139,7 +139,7 @@ shows.each do |url, json|
 end
 
 # Write all data into CSV
-CSV.open('euro2k14.csv', 'w') do |csv|
+CSV.open('spring2k14.csv', 'w') do |csv|
   csv << [
     "Video Show",
     "Show year",

@@ -1,0 +1,10 @@
+Thumbnail means wistia video and thumbnail (would be featured image in wordpress)
+
+europe 2k14
+"Thumbnail": Switchless
+
+spring 2k14
+"Thumbnail: Pixeliris"
+"Thumbnail: Personal Capital"
+"Thumbnail: ID.me"
+"Thumbnail: Pellucid Analytics"
