@@ -23,3 +23,7 @@ Video: Advanced Merchant Payments
 
 spring 2012
 Video: Concur
+
+fall 2012
+Video: Guardian Analytics
+Video: Internet Biometric Security Systems
