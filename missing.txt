@@ -1,10 +1,15 @@
 Thumbnail means wistia video and thumbnail (would be featured image in wordpress)
 
 europe 2k14
-"Thumbnail": Switchless
+Video: Switchless
 
 spring 2k14
-"Thumbnail: Pixeliris"
-"Thumbnail: Personal Capital"
-"Thumbnail: ID.me"
-"Thumbnail: Pellucid Analytics"
+Video: Pixeliris"
+Video: Personal Capital"
+Video: ID.me"
+Video: Pellucid Analytics"
+
+europe 2014
+thumbnail: DeviceIdent
+thumbnail: Heckyl Technologies
+
