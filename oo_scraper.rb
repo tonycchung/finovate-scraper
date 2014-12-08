@@ -111,7 +111,7 @@ class Scraper
           count += 1
           p = p.text
 
-          contacts = doc.xpath(contacts_key_path + "/p[#{count}]").inner_html if p.match /Contacts:/
+          contacts = doc.xpath(contacts_key_path + "/p[#{count}]").inner_html if p.match /Contacts:|Contact:/
           product_dist_strat         = sanitize_prod_dist(p) if p.match(/product\s+distribution\s+strategy/i)
           key_execs                  = sanitize_key(p)       if p.match(/Key\s+Executives/i)
           key_board_members          = sanitize_key(p)       if p.match(/Key\s+Board\s+Members/i)
