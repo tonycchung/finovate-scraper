@@ -7,12 +7,10 @@ require 'gdbm'
 
 class Scraper
   include Capybara::DSL
-  Capybara.default_driver = :selenium
-
   attr_accessor :shows
 
   def initialize(show_name, year, location, main_url)
-    Capybara.default_driver = :poltergeist
+    Capybara.default_driver = :selenium
     @shows = GDBM.new("#{show_name}.db")
     @show_name = show_name
     @year = year
@@ -33,7 +31,7 @@ class Scraper
           video_show: video_show,
           show_year: @year,
           location: @location,
-          show_url: url
+          url: url
         )
       end
     end
@@ -43,20 +41,19 @@ class Scraper
     # Click through each show's link and save company details and key stats. Also save in gdbm so on restart don't overwrite ones already completed.
     @shows.each do |url, json|
       show = JSON.load(json)
-      next if show["company_profile"]
+      # next if show["company_profile"]
 
       # Use nokogiri to get company details and company profile in raw HTML
-      doc = Nokogiri::HTML(open('#contentwrapper > table > tr > td > table:nth-child(3) > tr > td > table > tr > td:nth-child(2)'))
-      company_details = doc.css("#{css_details}").inner_html
+      doc = Nokogiri::HTML(open("#{url}"))
+      company_details = doc.css('#contentwrapper > table > tr > td > table:nth-child(3) > tr > td > table > tr > td:nth-child(2)').inner_html
 
       # Save entire company profile from td, add it line by line to company_profile until we've captured only necessary profile data
       # (nothing from and after "Product distribution strategy:")
-      visit "#{url}"
       company_profile = ""
-      if page.has_selector?(:css, '#contentwrapper > table > tbody > tr > td > table:nth-child(3) > tbody > tr > td > div > table > tbody > tr > td.cellpadding-left')
-        profile = doc.css('#contentwrapper > table > tr > td > table:nth-child(3) > tr > td > div > table > tr > td.cellpadding-left').inner_html
-      else
+      if doc.css('#contentwrapper > table > tr > td > table:nth-child(3) > tr > td > div > table > tr > td.cellpadding-left').empty?
         profile = doc.css('#contentwrapper > table > tr > td > table:nth-child(3) > tr > td > div > div > table > tr > td.cellpadding-left').inner_html
+      else
+        profile = doc.css('#contentwrapper > table > tr > td > table:nth-child(3) > tr > td > div > table > tr > td.cellpadding-left').inner_html
       end
 
       profile.split("\n").each do |line|
@@ -76,6 +73,8 @@ class Scraper
       show = JSON.load(json)
       next if show["contacts"]
 
+      doc = Nokogiri::HTML(open("#{url}"))
+      visit "#{url}"
       # Save company logo
       logo = ''
       logo_url = ''

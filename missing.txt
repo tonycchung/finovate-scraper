@@ -15,3 +15,8 @@ spring 2013
 Video: Palo Alto Software
 Video: Internet Biometric Security Systems
 
+fall 2013
+Video: Biometric Signature ID
+
+asia 2013
+Video: Advanced Merchant Payments
