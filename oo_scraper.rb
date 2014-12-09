@@ -58,7 +58,7 @@ class Scraper
 
       profile.split("\n").each do |line|
         next if line.match(/presenter\s+profile/i)
-        break if line.match(/product\s+distribution\s+strategy/i) || line.match(/Key|Contact/)
+        break if line.match(/product\s+distribution\s+strategy/i) || line.match(/Key|Contact|<img/)
         company_profile << line
       end
 

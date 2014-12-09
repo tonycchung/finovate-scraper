@@ -7,7 +7,7 @@ Video: Personal Capital"
 Video: ID.me"
 Video: Pellucid Analytics"
 
-europe 2014
+europe 2013
 thumbnail: DeviceIdent
 thumbnail: Heckyl Technologies
 
