@@ -13,7 +13,4 @@ p 'adding tax'
 adder.add_tax
 
 p 'checking missing'
-adder.check_missing("#{csv}_plus_video_thumb_tax.csv")
-
-p 'checking missing'
 adder.check_missing("#{csv}_master.csv")
