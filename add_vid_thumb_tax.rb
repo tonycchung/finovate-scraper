@@ -32,7 +32,11 @@ class Adder
 
     arry.each do |row|
       @videos_csv.each do |video_row|
-        row << "#{video_row[2]}" if row[0].split(' ').join.downcase == video_row[1].split(' ').join.downcase
+        if row[0].split(' ').join.downcase == video_row[1].split(' ').join.downcase
+          row << "#{video_row[2]}"
+        elsif row[0].split(' ').join.downcase == video_row[1].match(/.*[^HD]/).to_s.downcase
+          row << "#{video_row[2]}"
+        end
       end
     end
 

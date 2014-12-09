@@ -78,14 +78,29 @@ class Scraper
       # Save company logo
       logo = ''
       logo_url = ''
-      within(:css, "#contentwrapper > table > tbody > tr > td > table:nth-child(3) > tbody > tr > td > table > tbody > tr > td:nth-child(1) > div") do
-        all(:css, 'a').each do |a|
-          logo = a.find('img')['src']
-          logo_url = a['href']
+      if page.has_selector?('#contentwrapper > table > tbody > tr > td > table:nth-child(3) > tbody > tr > td > table > tbody > tr > td:nth-child(1) > div')
+        within(:css, "#contentwrapper > table > tbody > tr > td > table:nth-child(3) > tbody > tr > td > table > tbody > tr > td:nth-child(1) > div") do
+          all(:css, 'a').each do |a|
+            logo = a.find('img')['src']
+            logo_url = a['href']
+          end
         end
+      else
+        next
       end
 
       has_content?(show["video_show"]) or raise "couldn't load #{url}"
+
+      # Go through every p tag in each td and save whichever key data it contains
+      if page.has_selector?(:xpath, '//table/tbody/tr/td/table[2]/tbody/tr/td/div/table/tbody/tr/td[1]')
+        key_xpath = '//table/tbody/tr/td/table[2]/tbody/tr/td/div/table/tbody/tr/td[1]'
+      elsif page.has_selector?(:xpath, '//table/tbody/tr/td/table[2]/tbody/tr/td/div/div/table/tbody/tr/td[1]')
+        key_xpath = '//table/tbody/tr/td/table[2]/tbody/tr/td/div/div/table/tbody/tr/td[1]'
+      else
+        raise "missing key stat"
+        next
+      end
+
 
       contacts = nil
       product_dist_strat = nil
@@ -95,14 +110,6 @@ class Scraper
       key_investors = nil
       key_partnerships = nil
       key_customers = nil
-
-      # Go through every p tag in each td and save whichever key data it contains
-      if page.has_selector?(:xpath, '//table/tbody/tr/td/table[2]/tbody/tr/td/div/table/tbody/tr/td[1]')
-        key_xpath = '//table/tbody/tr/td/table[2]/tbody/tr/td/div/table/tbody/tr/td[1]'
-      else
-        key_xpath = '//table/tbody/tr/td/table[2]/tbody/tr/td/div/div/table/tbody/tr/td[1]'
-      end
-
       contacts_key_path = key_xpath.split('/').reject {|e| e == 'tbody'}.join('/')
 
       within(:xpath, key_xpath) do
