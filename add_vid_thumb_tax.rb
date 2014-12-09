@@ -38,7 +38,7 @@ class Adder
           row << "#{video_row[2]}"
         elsif row[0].split(' ').join.downcase == video_row[1].match(/.*[^HD]/).to_s.downcase
           row << "#{video_row[2]}"
-        elsif m.match(video_row[1]) > 0.75
+        elsif m.match(video_row[1].match(/.*[^HD]/).to_s) > 0.75
           row << "#{video_row[2]}"
         end
       end
