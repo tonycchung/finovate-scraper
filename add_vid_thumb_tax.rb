@@ -1,7 +1,8 @@
 require 'csv'
+require 'amatch'
 
 class Adder
-
+  include Amatch
   def initialize(csv)
     @headers = ["Video Show",
                 "Show year",
@@ -31,10 +32,13 @@ class Adder
     arry = CSV.read("#{@csv}.csv", {headers: true})
 
     arry.each do |row|
+      m = Jaro.new(row[0])
       @videos_csv.each do |video_row|
         if row[0].split(' ').join.downcase == video_row[1].split(' ').join.downcase
           row << "#{video_row[2]}"
         elsif row[0].split(' ').join.downcase == video_row[1].match(/.*[^HD]/).to_s.downcase
+          row << "#{video_row[2]}"
+        elsif m.match(video_row[1]) > 0.75
           row << "#{video_row[2]}"
         end
       end

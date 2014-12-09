@@ -42,3 +42,7 @@ Video: Wall Street Survivor
 spring 2011
 Video: Fiserv
 Thumbnail: Wikinvest
+
+spring 2010
+Video: Cross Commerce Media
+Video: Fipath
