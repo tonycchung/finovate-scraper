@@ -62,3 +62,9 @@ Video: Mint
 
 flagship 2009
 Video: Xchange
+
+startup 2008
+Video: CheckingFinder
+Video: Wesabe
+Video: SocialPicks
+Video: Buxfer

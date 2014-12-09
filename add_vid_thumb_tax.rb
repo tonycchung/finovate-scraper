@@ -34,13 +34,13 @@ class Adder
     arry.each do |row|
       m = Jaro.new(row[0])
       @videos_csv.each do |video_row|
-        if row[0].split(' ').join.downcase == video_row[1].split(' ').join.downcase
-          row << "#{video_row[2]}"
-        elsif row[0].split(' ').join.downcase == video_row[1].match(/.*[^HD]/).to_s.downcase
-          row << "#{video_row[2]}"
-        elsif video_row[1].match /\.mp4/
+        if video_row[1].match /\.mp4/
           break
-        elsif m.match(video_row[1].match(/.*[^HD]/).to_s) > 0.75
+        elsif row[0].split(' ').join.downcase == video_row[1].split(' ').join.downcase
+          row << "#{video_row[2]}"
+        elsif row[0].split(' ').join.downcase == video_row[1].match(/.*[^_QUICKTIME]/).to_s.downcase
+          row << "#{video_row[2]}"
+        elsif m.match(video_row[1].match(/.*[^_QUICKTIME]/).to_s) > 0.75
           row << "#{video_row[2]}"
         end
       end
