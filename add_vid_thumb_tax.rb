@@ -38,10 +38,13 @@ class Adder
           break
         elsif row[0].split(' ').join.downcase == video_row[1].split(' ').join.downcase
           row << "#{video_row[2]}"
+          break
         elsif row[0].split(' ').join.downcase == video_row[1].match(/.*[^_QUICKTIME]/).to_s.downcase
           row << "#{video_row[2]}"
-        elsif m.match(video_row[1].match(/.*[^_QUICKTIME]/).to_s) > 0.75
+          break
+        elsif m.match(video_row[1].match(/.*[^_QUICKTIME]/).to_s) > 0.9
           row << "#{video_row[2]}"
+          break
         end
       end
     end
